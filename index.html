@@ -1,36 +1,359 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .sidebar {
+      width: 25%;
+      background-color: #ededed;
+      overflow-y: scroll;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .sidebar-header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .sidebar-header h3 {
+      font-weight: normal;
+      color: #4a4a4a;
+    }
+
+    .sidebar-search {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .sidebar-search input {
+      width: 100%;
+      height: 35px;
+      border: none;
+      border-radius: 20px;
+      padding-left: 15px;
+      font-size: 14px;
+    }
+
+    .sidebar-search input:focus {
+      outline: none;
+    }
+
+    .sidebar-chat {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .sidebar-chat:hover {
+      background-color: #f6f6f6;
+    }
+
+    .sidebar-chat img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 15px;
+    }
+
+    .sidebar-chat-info {
+      flex-grow: 1;
+    }
+
+    .sidebar-chat-info h4 {
+      font-weight: normal;
+      color: #4a4a4a;
+      margin-bottom: 5px;
+    }
+
+    .sidebar-chat-info p {
+      font-size: 14px;
+      color: #999999;
+    }
+
+    .chat {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #ddd; 
+    }
+
+    .chat-header img {
+      width: 50px;
+      height: 50px; 
+      border-radius: 50%;
+       margin-right :15px; 
+     }
+     
+     .chat-header-info { 
+       flex-grow :1; 
+     }
+     
+     .chat-header-info h3 { 
+       font-weight :normal; 
+       color :#4a4a4a; 
+       margin-bottom :5px; 
+     }
+     
+     .chat-header-info p { 
+       font-size :14px; 
+       color :#999999; 
+     }
+     
+     .chat-body { 
+       flex-grow :1; 
+       background-color :#e5ddd5; 
+       overflow-y :scroll; 
+       padding :15px; 
+     }
+     
+     .chat-body::-webkit-scrollbar { 
+       display :none; 
+     }
+     .combined-message {
+    max-width: 60%;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    padding: 10px;
+    font-size: 16px;
+    align-self: flex-end;
+    background-color: #DCF8C6;
+  }
+     .message { 
+       max-width :60%; 
+       margin-bottom :15px; 
+     }
+     
+     .message p { 
+       line-height :1.6; 
+       padding :10px; 
+       border-radius :10px; 
+       font-size :16px; 
+     }
+     
+     .sent-message { 
+       align-self :flex-end; 
+       background-color :#DCF8C6; 
+     }
+     
+     .received-message { 
+       align-self :flex-start; 
+       background-color :#ffffff; 
+     }
+     
+     .chat-footer { 
+       display :flex; 
+       align-items :center; 
+       padding :10px; 
+       border-top :1px solid #ddd; 
+     }
+     
+     .chat-footer input { 
+       width :100%; 
+       height :40px; 
+       border :none; 
+       border-radius :20px; 
+       padding-left :15px; 
+       font-size :30px;  
+     }
+     
+     .chat-footer input:focus {  
+        outline:none ;  
+     }
+     
+     @media screen and (max-width :768px) {  
+        .container {  
+          flex-direction :column ;  
+        }  
+        
+        .sidebar {  
+          width :100%;  
+          height :25%;  
+        }  
+        
+        .chat {  
+          width :100%;  
+          height :75%;  
+        }  
+     }
+  </style>
 </head>
 <body>
-    <ul id="messages"></ul>
-    <form id="form" action="">
-        <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const form = document.getElementById('form');
-        const input = document.getElementById('input');
-        const messages = document.getElementById('messages');
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            if (input.value) {
-                socket.emit('chat message', input.value);
-                input.value = '';
+  <div class="container">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <img src="user.jpg" alt="User">
+        <h3>User Name</h3>
+        <h3 id="online-users">Online Users:0</h3>
+      </div>
+      <div class="sidebar-search">
+        <input type="text" placeholder="Search or start new chat">
+      </div>
+      <div class="sidebar-chat">
+        <img src="friend1.jpg" alt="Friend 1">
+        <div class="sidebar-chat-info">
+          <h4>Friend 1</h4>
+          <p>Hey, how are you?</p>
+        </div>
+      </div>
+      <div class="sidebar-chat">
+        <img src="friend2.jpg" alt="Friend 2">
+        <div class="sidebar-chat-info">
+          <h4>Friend 2</h4>
+          <p>What's up?</p>
+        </div>
+      </div>
+      <div class="sidebar-chat">
+        <img src="friend3.jpg" alt="Friend 3">
+        <div class="sidebar-chat-info">
+          <h4>Friend 3</h4>
+          <p>Happy birthday!</p>
+        </div>
+      </div>
+    </div>
+    <div class="chat">
+      <div class="chat-header">
+        <img src="friend1.jpg" alt="Friend 1">
+        <div class="chat-header-info">
+          <h3>Friend 1</h3>
+          <p>Online</p>
+        </div>
+      </div>
+      <div class="chat-body" id=messages>
+        <div class="message received-message">
+          <p>Hey, how are you?</p>
+        </div>
+        <div class="message sent-message">
+          <p>I'm good, thanks. And you?</p>
+        </div>
+        <div class="message received-message">
+          <p>I'm fine too. Just wanted to catch up with you.</p>
+        </div>
+      </div>
+      <div class="chat-footer" id="form"> 
+        <input type="text" placeholder="Type a message" id="message Input"><button id="sendButton">Send</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const remValues = {};
+    document.getElementById("sendButton").addEventListener("click", () => {
+        let message = document.getElementById("message Input").value;
+        if(message.toLowerCase() === '/clear') {
+            document.querySelector(".chat-body").innerHTML = '';
+        } else if (message.toLowerCase() === '/help') {
+      const helpMessage = `Avalable commands: 
+      /help - Show this message 
+      /random - Print a random number 
+      /clear - Chear the chat`;
+      alert(helpMessage);
+    } else if (message.toLowerCase() === '/random') {
+      const randomNum = Math.floor(Math.random() * 100); 
+      const messagesDiv = document.querySelector(".chat-body");
+      const newMessageDiv = document.createElement("div");
+      newMessageDiv.className = "combined-message";
+      newMessageDiv.textContent =  `Here's your random number: ${randomNum}`;
+      messagesDiv.appendChild(newMessageDiv);
+      return false;
+    } else if (message.startsWith('/rem')) {
+        const words = message.split(' '); 
+        if (words.length === 3) { 
+            const name = words[1]; 
+            const value = words[2]; 
+            remValues[name] = value; 
+            alert(`You have set ${name} to ${value}`); 
+        } else if (words.length === 2) {
+            const name = words[1]; 
+            const value = remValues[name];
+            if (value) { 
+            alert(`The value of ${name} is ${value}`);
+            } else {
+            alert(`There is no value for ${name}`);
             }
-        });
+        } else { 
+            alert('Invalid /rem command. Usage: /rem <name> <value> or /rem <name>');
+        }
 
-        socket.on('chat message', function(msg) {
-            const li = document.createElement('li');
-            li.textContent = msg;
-            messages.appendChild(li);
-        });
-    </script>
+        return false;
+    }
+    else if (message.startsWith('/calc')) {
+        const expression = message.slice(6); 
+        const validChars = '0123456789+-*/(). '; 
+        let valid = true; 
+
+        for (let char of expression) {
+            if (!validChars.includes(char)) { 
+            valid = false;
+            break;
+            }
+        }
+        if(!expression){
+            alert('Invalid /calc command. Usage: /cal expression');
+        }
+        else if (valid) { 
+            const result = eval(expression); 
+            alert(`The result of ${expression} is ${result}`); 
+        } else { 
+            alert('Invalid /calc command. Only numbers and arithmetic operators are allowed.');
+        }
+
+        return false;
+        }
+    else {
+        message = message.replace(/cool/gi, '😎');
+        message = message.replace(/react/gi, '👍');
+        message = message.replace(/woah/gi, '😮');
+        message = message.replace(/hey/gi, '👋');
+        message = message.replace(/lol/gi, '😂');
+        message = message.replace(/like/gi, '❤️');
+        message = message.replace(/congratulations/gi, '🎉');
+      socket.emit("chat message", message);
+    }
+    });
+    socket.on("chat message", (msg) => {
+    const messagesDiv = document.querySelector(".chat-body"); 
+    const newMessageDiv = document.createElement("div");
+    newMessageDiv.className = "combined-message";
+    newMessageDiv.textContent = msg;
+    messagesDiv.appendChild(newMessageDiv);
+  });
+  socket.on('update users', function(onlineUsers) {
+    document.getElementById('online-users').innerHTML = "Online Users:" +onlineUsers;
+  });
+  </script>
+  
 </body>
 </html>
+

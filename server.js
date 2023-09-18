@@ -9,10 +9,15 @@ const io = socketIo(server);
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
-
+let onlineUsers = 0;
 io.on('connection', (socket) => {
+    onlineUsers++; // Increase the count when a user connects
+    io.emit('update users', onlineUsers); 
+    console.log(onlineUsers);
     console.log('a user connected'); 
     socket.on('disconnect', () => {
+        onlineUsers--; // Decrease the count when a user disconnects
+        io.emit('update users', onlineUsers); 
         console.log( 'user disconnected');
     });
     socket.on('chat message', (msg) => {
